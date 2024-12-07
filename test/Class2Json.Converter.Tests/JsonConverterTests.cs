@@ -163,4 +163,22 @@ public class JsonConverterTests
 
         Assert.Equal(expectedJson, json);
     }
+    
+    [Fact]
+    public void ConvertClass_ShouldHandleArrays()
+    {
+        var sourceCode = @"
+        public class Sample
+        {
+            public int[] Numbers { get; set; }
+            public string[] Names { get; set; }
+        }
+    ";
+        var expectedJson = "{\"numbers\":[],\"names\":[]}";
+
+        var json = JsonConverter.ConvertClass(sourceCode);
+
+        Assert.Equal(expectedJson, json);
+    }
+    
 }

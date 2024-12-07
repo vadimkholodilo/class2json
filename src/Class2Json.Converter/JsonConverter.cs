@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -38,9 +39,16 @@ namespace Class2Json.Converter
                 {
                     if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
                     {
-                        var nestedProperties = new Dictionary<string, object>();
-                        AddClassProperties(property.PropertyType, nestedProperties, addedProperties, useCamelCase);
-                        jsonProperties[jsonKey] = nestedProperties;
+                        if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
+                        {
+                            jsonProperties[jsonKey] = GetEnumerableDefaultValue(property.PropertyType);
+                        }
+                        else
+                        {
+                            var nestedProperties = new Dictionary<string, object>();
+                            AddClassProperties(property.PropertyType, nestedProperties, addedProperties, useCamelCase);
+                            jsonProperties[jsonKey] = nestedProperties;
+                        }
                     }
                     else
                     {
@@ -49,6 +57,23 @@ namespace Class2Json.Converter
                     addedProperties.Add(jsonKey);
                 }
             }
+        }
+
+        private static object GetEnumerableDefaultValue(Type type)
+        {
+            if (type.IsArray)
+            {
+                return Array.CreateInstance(type.GetElementType(), 0);
+            }
+
+            if (type.IsGenericType && typeof(IEnumerable).IsAssignableFrom(type))
+            {
+                var elementType = type.GetGenericArguments()[0];
+                var listType = typeof(List<>).MakeGenericType(elementType);
+                return Activator.CreateInstance(listType);
+            }
+
+            return null;
         }
 
         private static Assembly CompileSourceCode(string sourceCode)
