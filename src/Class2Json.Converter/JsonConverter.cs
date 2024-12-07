@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
@@ -30,7 +27,8 @@ namespace Class2Json.Converter
             return JsonSerializer.Serialize(jsonProperties);
         }
 
-        private static void AddClassProperties(Type classType, Dictionary<string, object> jsonProperties, HashSet<string> addedProperties, bool useCamelCase)
+        private static void AddClassProperties(Type classType, Dictionary<string, object> jsonProperties,
+            HashSet<string> addedProperties, bool useCamelCase)
         {
             foreach (var property in classType.GetProperties())
             {
@@ -54,6 +52,7 @@ namespace Class2Json.Converter
                     {
                         jsonProperties[jsonKey] = GetDefaultValue(property.PropertyType);
                     }
+
                     addedProperties.Add(jsonKey);
                 }
             }
@@ -111,7 +110,8 @@ namespace Class2Json.Converter
 
             while (classTypes.Count > 0)
             {
-                var independentClass = classTypes.FirstOrDefault(ct => !classTypes.Any(t => t.GetProperties().Any(p => p.PropertyType == ct)));
+                var independentClass = classTypes.FirstOrDefault(ct =>
+                    !classTypes.Any(t => t.GetProperties().Any(p => p.PropertyType == ct)));
                 if (independentClass != null)
                 {
                     orderedClassTypes.Add(independentClass);

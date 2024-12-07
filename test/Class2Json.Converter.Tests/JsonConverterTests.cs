@@ -8,9 +8,9 @@ public class JsonConverterTests
         var sourceCode = "";
         var expectedJson = "";
 
-        var json = JsonConverter.ConvertClass(sourceCode);
+        var actualJson = JsonConverter.ConvertClass(sourceCode);
 
-        Assert.Equal(expectedJson, json);
+        Assert.Equal(expectedJson, actualJson);
     }
 
     [Fact]
@@ -23,9 +23,9 @@ public class JsonConverterTests
         ";
         var expectedJson = "{}";
 
-        var json = JsonConverter.ConvertClass(sourceCode);
+        var actualJson = JsonConverter.ConvertClass(sourceCode);
 
-        Assert.Equal(expectedJson, json);
+        Assert.Equal(expectedJson, actualJson);
     }
 
     [Fact]
@@ -42,9 +42,9 @@ public class JsonConverterTests
         ";
         var expectedJson = "{\"age\":0,\"height\":0,\"isActive\":false,\"name\":\"\"}";
 
-        var json = JsonConverter.ConvertClass(sourceCode);
+        var actualJson = JsonConverter.ConvertClass(sourceCode);
 
-        Assert.Equal(expectedJson, json);
+        Assert.Equal(expectedJson, actualJson);
     }
 
     [Fact]
@@ -66,9 +66,9 @@ public class JsonConverterTests
         ";
         var expectedJson = "{\"firstName\":\"\",\"lastName\":\"\",\"address\":{\"street\":\"\",\"city\":\"\"}}";
 
-        var json = JsonConverter.ConvertClass(sourceCode);
+        var actualJson = JsonConverter.ConvertClass(sourceCode);
 
-        Assert.Equal(expectedJson, json);
+        Assert.Equal(expectedJson, actualJson);
     }
 
     [Fact]
@@ -87,9 +87,9 @@ public class JsonConverterTests
         ";
         var expectedJson = "{\"id\":0,\"name\":\"\"}";
 
-        var json = JsonConverter.ConvertClass(sourceCode);
+        var actualJson = JsonConverter.ConvertClass(sourceCode);
 
-        Assert.Equal(expectedJson, json);
+        Assert.Equal(expectedJson, actualJson);
     }
 
     [Fact]
@@ -118,9 +118,9 @@ public class JsonConverterTests
         var expectedJson =
             "{\"firstName\":\"\",\"lastName\":\"\",\"address\":{\"street\":\"\",\"city\":\"\",\"country\":{\"name\":\"\"}}}";
 
-        var json = JsonConverter.ConvertClass(sourceCode);
+        var actualJson = JsonConverter.ConvertClass(sourceCode);
 
-        Assert.Equal(expectedJson, json);
+        Assert.Equal(expectedJson, actualJson);
     }
 
     [Fact]
@@ -137,9 +137,9 @@ public class JsonConverterTests
         ";
         var expectedJson = "{\"age\":0,\"height\":0,\"isActive\":false,\"name\":\"\"}";
 
-        var json = JsonConverter.ConvertClass(sourceCode, useCamelCase: true);
+        var actualJson = JsonConverter.ConvertClass(sourceCode, useCamelCase: true);
 
-        Assert.Equal(expectedJson, json);
+        Assert.Equal(expectedJson, actualJson);
     }
 
     [Fact]
@@ -156,9 +156,9 @@ public class JsonConverterTests
         ";
         var expectedJson = "{\"Age\":0,\"Height\":0,\"IsActive\":false,\"Name\":\"\"}";
 
-        var json = JsonConverter.ConvertClass(sourceCode, useCamelCase: false);
+        var actualJson = JsonConverter.ConvertClass(sourceCode, useCamelCase: false);
 
-        Assert.Equal(expectedJson, json);
+        Assert.Equal(expectedJson, actualJson);
     }
 
     [Fact]
@@ -174,9 +174,9 @@ public class JsonConverterTests
     ";
         var expectedJson = "{\"age\":null,\"height\":null,\"isActive\":null}";
 
-        var json = JsonConverter.ConvertClass(sourceCode);
+        var actualJson = JsonConverter.ConvertClass(sourceCode);
 
-        Assert.Equal(expectedJson, json);
+        Assert.Equal(expectedJson, actualJson);
     }
 
     [Fact]
@@ -191,8 +191,8 @@ public class JsonConverterTests
     ";
         var expectedJson = "{\"numbers\":[],\"names\":[]}";
 
-        var json = JsonConverter.ConvertClass(sourceCode);
+        var actualJson = JsonConverter.ConvertClass(sourceCode);
 
-        Assert.Equal(expectedJson, json);
+        Assert.Equal(expectedJson, actualJson);
     }
 }
