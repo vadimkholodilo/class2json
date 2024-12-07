@@ -4,147 +4,146 @@ using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Class2Json.Converter
+namespace Class2Json.Converter;
+
+public static class JsonConverter
 {
-    public static class JsonConverter
+    public static string ConvertClass(string sourceCode, bool useCamelCase = true)
     {
-        public static string ConvertClass(string sourceCode, bool useCamelCase = true)
+        if (string.IsNullOrWhiteSpace(sourceCode))
+            return string.Empty;
+
+        var compiledAssembly = CompileSourceCode(sourceCode);
+        var classTypes = GetOrderedClassTypes(compiledAssembly);
+
+        var jsonProperties = new Dictionary<string, object>();
+        var addedProperties = new HashSet<string>();
+
+        foreach (var classType in classTypes)
         {
-            if (string.IsNullOrWhiteSpace(sourceCode))
-                return string.Empty;
-
-            var compiledAssembly = CompileSourceCode(sourceCode);
-            var classTypes = GetOrderedClassTypes(compiledAssembly);
-
-            var jsonProperties = new Dictionary<string, object>();
-            var addedProperties = new HashSet<string>();
-
-            foreach (var classType in classTypes)
-            {
-                AddClassProperties(classType, jsonProperties, addedProperties, useCamelCase);
-            }
-
-            return JsonSerializer.Serialize(jsonProperties);
+            AddClassProperties(classType, jsonProperties, addedProperties, useCamelCase);
         }
 
-        private static void AddClassProperties(Type classType, Dictionary<string, object> jsonProperties,
-            HashSet<string> addedProperties, bool useCamelCase)
+        return JsonSerializer.Serialize(jsonProperties);
+    }
+
+    private static void AddClassProperties(Type classType, Dictionary<string, object> jsonProperties,
+        HashSet<string> addedProperties, bool useCamelCase)
+    {
+        foreach (var property in classType.GetProperties())
         {
-            foreach (var property in classType.GetProperties())
+            var jsonKey = useCamelCase ? ToCamelCase(property.Name) : property.Name;
+            if (!addedProperties.Contains(jsonKey))
             {
-                var jsonKey = useCamelCase ? ToCamelCase(property.Name) : property.Name;
-                if (!addedProperties.Contains(jsonKey))
+                if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
                 {
-                    if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+                    if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
                     {
-                        if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
-                        {
-                            jsonProperties[jsonKey] = GetEnumerableDefaultValue(property.PropertyType);
-                        }
-                        else
-                        {
-                            var nestedProperties = new Dictionary<string, object>();
-                            AddClassProperties(property.PropertyType, nestedProperties, addedProperties, useCamelCase);
-                            jsonProperties[jsonKey] = nestedProperties;
-                        }
+                        jsonProperties[jsonKey] = GetEnumerableDefaultValue(property.PropertyType);
                     }
                     else
                     {
-                        jsonProperties[jsonKey] = GetDefaultValue(property.PropertyType);
+                        var nestedProperties = new Dictionary<string, object>();
+                        AddClassProperties(property.PropertyType, nestedProperties, addedProperties, useCamelCase);
+                        jsonProperties[jsonKey] = nestedProperties;
                     }
-
-                    addedProperties.Add(jsonKey);
-                }
-            }
-        }
-
-        private static object GetEnumerableDefaultValue(Type type)
-        {
-            if (type.IsArray)
-            {
-                return Array.CreateInstance(type.GetElementType(), 0);
-            }
-
-            if (type.IsGenericType && typeof(IEnumerable).IsAssignableFrom(type))
-            {
-                var elementType = type.GetGenericArguments()[0];
-                var listType = typeof(List<>).MakeGenericType(elementType);
-                return Activator.CreateInstance(listType);
-            }
-
-            return null;
-        }
-
-        private static Assembly CompileSourceCode(string sourceCode)
-        {
-            var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
-            var references = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
-                .Select(a => MetadataReference.CreateFromFile(a.Location))
-                .Cast<MetadataReference>();
-
-            var compilation = CSharpCompilation.Create("DynamicAssembly")
-                .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
-                .AddReferences(references)
-                .AddSyntaxTrees(syntaxTree);
-
-            using var ms = new MemoryStream();
-            var result = compilation.Emit(ms);
-
-            if (!result.Success)
-            {
-                var errors = string.Join(Environment.NewLine, result.Diagnostics
-                    .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-                    .Select(diagnostic => diagnostic.ToString()));
-                throw new InvalidOperationException($"Compilation failed: {errors}");
-            }
-
-            ms.Seek(0, SeekOrigin.Begin);
-            return Assembly.Load(ms.ToArray());
-        }
-
-        private static List<Type> GetOrderedClassTypes(Assembly assembly)
-        {
-            var classTypes = assembly.GetTypes().Where(t => t.IsClass).ToList();
-            var orderedClassTypes = new List<Type>();
-
-            while (classTypes.Count > 0)
-            {
-                var independentClass = classTypes.FirstOrDefault(ct =>
-                    !classTypes.Any(t => t.GetProperties().Any(p => p.PropertyType == ct)));
-                if (independentClass != null)
-                {
-                    orderedClassTypes.Add(independentClass);
-                    classTypes.Remove(independentClass);
                 }
                 else
                 {
-                    orderedClassTypes.AddRange(classTypes);
-                    break;
+                    jsonProperties[jsonKey] = GetDefaultValue(property.PropertyType);
                 }
+
+                addedProperties.Add(jsonKey);
             }
+        }
+    }
 
-            return orderedClassTypes;
+    private static object GetEnumerableDefaultValue(Type type)
+    {
+        if (type.IsArray)
+        {
+            return Array.CreateInstance(type.GetElementType(), 0);
         }
 
-        private static string ToCamelCase(string str)
+        if (type.IsGenericType && typeof(IEnumerable).IsAssignableFrom(type))
         {
-            if (string.IsNullOrEmpty(str) || !char.IsUpper(str[0]))
-                return str;
-
-            var chars = str.ToCharArray();
-            chars[0] = char.ToLower(chars[0]);
-            return new string(chars);
+            var elementType = type.GetGenericArguments()[0];
+            var listType = typeof(List<>).MakeGenericType(elementType);
+            return Activator.CreateInstance(listType);
         }
 
-        private static object GetDefaultValue(Type type)
+        return null;
+    }
+
+    private static Assembly CompileSourceCode(string sourceCode)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
+        var references = AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
+            .Select(a => MetadataReference.CreateFromFile(a.Location))
+            .Cast<MetadataReference>();
+
+        var compilation = CSharpCompilation.Create("DynamicAssembly")
+            .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+            .AddReferences(references)
+            .AddSyntaxTrees(syntaxTree);
+
+        using var ms = new MemoryStream();
+        var result = compilation.Emit(ms);
+
+        if (!result.Success)
         {
-            if (type.IsValueType)
+            var errors = string.Join(Environment.NewLine, result.Diagnostics
+                .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+                .Select(diagnostic => diagnostic.ToString()));
+            throw new InvalidOperationException($"Compilation failed: {errors}");
+        }
+
+        ms.Seek(0, SeekOrigin.Begin);
+        return Assembly.Load(ms.ToArray());
+    }
+
+    private static List<Type> GetOrderedClassTypes(Assembly assembly)
+    {
+        var classTypes = assembly.GetTypes().Where(t => t.IsClass).ToList();
+        var orderedClassTypes = new List<Type>();
+
+        while (classTypes.Count > 0)
+        {
+            var independentClass = classTypes.FirstOrDefault(ct =>
+                !classTypes.Any(t => t.GetProperties().Any(p => p.PropertyType == ct)));
+            if (independentClass != null)
             {
-                return Activator.CreateInstance(type);
+                orderedClassTypes.Add(independentClass);
+                classTypes.Remove(independentClass);
             }
-
-            return type == typeof(string) ? string.Empty : null;
+            else
+            {
+                orderedClassTypes.AddRange(classTypes);
+                break;
+            }
         }
+
+        return orderedClassTypes;
+    }
+
+    private static string ToCamelCase(string str)
+    {
+        if (string.IsNullOrEmpty(str) || !char.IsUpper(str[0]))
+            return str;
+
+        var chars = str.ToCharArray();
+        chars[0] = char.ToLower(chars[0]);
+        return new string(chars);
+    }
+
+    private static object GetDefaultValue(Type type)
+    {
+        if (type.IsValueType)
+        {
+            return Activator.CreateInstance(type);
+        }
+
+        return type == typeof(string) ? string.Empty : null;
     }
 }
