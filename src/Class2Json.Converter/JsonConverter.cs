@@ -32,7 +32,7 @@ public static class JsonConverter
     {
         foreach (var property in classType.GetProperties())
         {
-            var jsonKey = useCamelCase ? ToCamelCase(property.Name) : property.Name;
+            var jsonKey = useCamelCase ? property.Name.ToCamelCase() : property.Name;
             if (!addedProperties.Contains(jsonKey))
             {
                 if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
@@ -110,12 +110,13 @@ public static class JsonConverter
 
         while (classTypes.Count > 0)
         {
-            var independentClass = classTypes.FirstOrDefault(ct =>
+            var rootClass = classTypes.FirstOrDefault(ct =>
                 !classTypes.Any(t => t.GetProperties().Any(p => p.PropertyType == ct)));
-            if (independentClass != null)
+            
+            if (rootClass != null)
             {
-                orderedClassTypes.Add(independentClass);
-                classTypes.Remove(independentClass);
+                orderedClassTypes.Add(rootClass);
+                classTypes.Remove(rootClass);
             }
             else
             {
@@ -125,16 +126,6 @@ public static class JsonConverter
         }
 
         return orderedClassTypes;
-    }
-
-    private static string ToCamelCase(string str)
-    {
-        if (string.IsNullOrEmpty(str) || !char.IsUpper(str[0]))
-            return str;
-
-        var chars = str.ToCharArray();
-        chars[0] = char.ToLower(chars[0]);
-        return new string(chars);
     }
 
     private static object GetDefaultValue(Type type)
