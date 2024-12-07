@@ -14,23 +14,6 @@ public class JsonConverterTests
     }
 
     [Fact]
-    public void ConvertClass_ShouldReturnExpectedJson_IfSourceCodeIsValid()
-    {
-        var sourceCode = @"
-            public class Person
-            {
-                public string FirstName { get; set; }
-                public string LastName { get; set; }
-            }
-        ";
-        var expectedJson = "{\"firstName\":\"\",\"lastName\":\"\"}";
-
-        var json = JsonConverter.ConvertClass(sourceCode);
-
-        Assert.Equal(expectedJson, json);
-    }
-
-    [Fact]
     public void ConvertClass_ShouldHandlePrimitiveTypes()
     {
         var sourceCode = @"

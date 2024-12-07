@@ -16,7 +16,7 @@ namespace Class2Json.Converter
                 return string.Empty;
 
             var compiledAssembly = CompileSourceCode(sourceCode);
-            var classTypes = compiledAssembly.GetTypes().Where(t => t.IsClass).ToList();
+            var classTypes = GetOrderedClassTypes(compiledAssembly);
 
             var jsonProperties = new Dictionary<string, object>();
 
@@ -66,6 +66,29 @@ namespace Class2Json.Converter
 
             ms.Seek(0, SeekOrigin.Begin);
             return Assembly.Load(ms.ToArray());
+        }
+
+        private static List<Type> GetOrderedClassTypes(Assembly assembly)
+        {
+            var classTypes = assembly.GetTypes().Where(t => t.IsClass).ToList();
+            var orderedClassTypes = new List<Type>();
+
+            while (classTypes.Count > 0)
+            {
+                var independentClass = classTypes.FirstOrDefault(ct => !classTypes.Any(t => t.GetProperties().Any(p => p.PropertyType == ct)));
+                if (independentClass != null)
+                {
+                    orderedClassTypes.Add(independentClass);
+                    classTypes.Remove(independentClass);
+                }
+                else
+                {
+                    orderedClassTypes.AddRange(classTypes);
+                    break;
+                }
+            }
+
+            return orderedClassTypes;
         }
 
         private static string ToCamelCase(string str)
