@@ -19,25 +19,36 @@ namespace Class2Json.Converter
             var classTypes = GetOrderedClassTypes(compiledAssembly);
 
             var jsonProperties = new Dictionary<string, object>();
+            var addedProperties = new HashSet<string>();
 
             foreach (var classType in classTypes)
             {
-                var classInstance = Activator.CreateInstance(classType);
-                foreach (var property in classType.GetProperties())
+                AddClassProperties(classType, jsonProperties, addedProperties, useCamelCase);
+            }
+
+            return JsonSerializer.Serialize(jsonProperties);
+        }
+
+        private static void AddClassProperties(Type classType, Dictionary<string, object> jsonProperties, HashSet<string> addedProperties, bool useCamelCase)
+        {
+            foreach (var property in classType.GetProperties())
+            {
+                var jsonKey = useCamelCase ? ToCamelCase(property.Name) : property.Name;
+                if (!addedProperties.Contains(jsonKey))
                 {
-                    var jsonKey = useCamelCase ? ToCamelCase(property.Name) : property.Name;
                     if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
                     {
-                        jsonProperties[jsonKey] = GetNestedClassProperties(property.PropertyType);
+                        var nestedProperties = new Dictionary<string, object>();
+                        AddClassProperties(property.PropertyType, nestedProperties, addedProperties, useCamelCase);
+                        jsonProperties[jsonKey] = nestedProperties;
                     }
                     else
                     {
                         jsonProperties[jsonKey] = GetDefaultValue(property.PropertyType);
                     }
+                    addedProperties.Add(jsonKey);
                 }
             }
-
-            return JsonSerializer.Serialize(jsonProperties);
         }
 
         private static Assembly CompileSourceCode(string sourceCode)
@@ -109,20 +120,6 @@ namespace Class2Json.Converter
             }
 
             return type == typeof(string) ? string.Empty : null;
-        }
-
-        private static Dictionary<string, object> GetNestedClassProperties(Type type)
-        {
-            var nestedProperties = type.GetProperties();
-            var nestedJsonProperties = new Dictionary<string, object>();
-
-            foreach (var property in nestedProperties)
-            {
-                var jsonKey = ToCamelCase(property.Name);
-                nestedJsonProperties[jsonKey] = GetDefaultValue(property.PropertyType);
-            }
-
-            return nestedJsonProperties;
         }
     }
 }
