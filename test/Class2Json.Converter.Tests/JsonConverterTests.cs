@@ -14,6 +14,21 @@ public class JsonConverterTests
     }
 
     [Fact]
+    public void ConvertClass_ShouldReturnEmptyObject_IfClassIsEmpty()
+    {
+        var sourceCode = @"
+            public class Sample
+            {
+            }
+        ";
+        var expectedJson = "{}";
+
+        var json = JsonConverter.ConvertClass(sourceCode);
+
+        Assert.Equal(expectedJson, json);
+    }
+
+    [Fact]
     public void ConvertClass_ShouldHandlePrimitiveTypes()
     {
         var sourceCode = @"
@@ -163,7 +178,7 @@ public class JsonConverterTests
 
         Assert.Equal(expectedJson, json);
     }
-    
+
     [Fact]
     public void ConvertClass_ShouldHandleArrays()
     {
@@ -180,5 +195,4 @@ public class JsonConverterTests
 
         Assert.Equal(expectedJson, json);
     }
-    
 }
