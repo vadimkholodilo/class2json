@@ -1,4 +1,6 @@
-﻿namespace Class2Json.Converter.Tests;
+﻿using Class2Json.Converter.Exceptions;
+
+namespace Class2Json.Converter.Tests;
 
 public class JsonConverterTests
 {
@@ -194,5 +196,18 @@ public class JsonConverterTests
         var actualJson = JsonConverter.ConvertClass(sourceCode);
 
         Assert.Equal(expectedJson, actualJson);
+    }
+
+    [Fact]
+    public void ConvertClass_ShouldThrowCompilationException_IfSourceCodeIsInvalid()
+    {
+        var sourceCode = @"
+        public class Sample
+            public int[] Numbers { get; set; }
+            public string[] Names { get; set; }
+        }
+    ";
+
+        Assert.Throws<CompilationException>(() => JsonConverter.ConvertClass(sourceCode));
     }
 }
