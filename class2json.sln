@@ -13,8 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{069E310C-2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Class2Json.Converter.Tests", "test\Class2Json.Converter.Tests\Class2Json.Converter.Tests.csproj", "{6F4C3715-7B9B-47B8-8794-C36B62457361}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Class2Json.Web", "Class2Json.Web\Class2Json.Web.csproj", "{DDB65AD8-E328-4415-B096-E9D110567CE3}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,10 +31,6 @@ Global
 		{6F4C3715-7B9B-47B8-8794-C36B62457361}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F4C3715-7B9B-47B8-8794-C36B62457361}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F4C3715-7B9B-47B8-8794-C36B62457361}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DDB65AD8-E328-4415-B096-E9D110567CE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DDB65AD8-E328-4415-B096-E9D110567CE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DDB65AD8-E328-4415-B096-E9D110567CE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DDB65AD8-E328-4415-B096-E9D110567CE3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,6 +39,5 @@ Global
 		{0EDE36DD-0616-45BE-9840-ECEA76B7A30E} = {ED0FA6CE-436C-4C25-9C25-235D507DD11D}
 		{F1FE69FF-3B1A-404C-9B86-450C27677876} = {ED0FA6CE-436C-4C25-9C25-235D507DD11D}
 		{6F4C3715-7B9B-47B8-8794-C36B62457361} = {069E310C-2F12-460F-8585-B8889771EBE6}
-		{DDB65AD8-E328-4415-B096-E9D110567CE3} = {ED0FA6CE-436C-4C25-9C25-235D507DD11D}
 	EndGlobalSection
 EndGlobal
