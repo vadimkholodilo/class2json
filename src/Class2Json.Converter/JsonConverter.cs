@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Reflection;
 using System.Text.Json;
+using Class2Json.Converter.Exceptions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -96,7 +97,7 @@ public static class JsonConverter
             var errors = string.Join(Environment.NewLine, result.Diagnostics
                 .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
                 .Select(diagnostic => diagnostic.ToString()));
-            throw new InvalidOperationException($"Compilation failed: {errors}");
+            throw new CompilationException($"Compilation failed: {errors}");
         }
 
         ms.Seek(0, SeekOrigin.Begin);
@@ -112,7 +113,7 @@ public static class JsonConverter
         {
             var rootClass = classTypes.FirstOrDefault(ct =>
                 !classTypes.Any(t => t.GetProperties().Any(p => p.PropertyType == ct)));
-            
+
             if (rootClass != null)
             {
                 orderedClassTypes.Add(rootClass);
